@@ -114,6 +114,29 @@ void app_run(void)
             // DS1307 WHO_AM_I brukar ge 0x68
             uart_write_string("DS1307 responded\n");
             gpio_pin_toggle(&RED_LED_PORT, RED_LED_PIN);
+            uint8_t sec = 0;
+            uint8_t min = 0;
+
+            if (
+                twi_read_register(DS1307_ADDR, 0x00, &sec) == TWI_OK &&
+                twi_read_register(DS1307_ADDR, 0x01, &min) == TWI_OK
+            )
+            {
+                uint8_t low_sec = (sec & 0b00001111) + 48;
+                uint8_t high_sec = ((sec & 0b01110000)>>4) + 48;
+
+                uint8_t low_min = (min & 0b00001111) + 48;
+                uint8_t high_min = ((min & 0b01110000)>>4) + 48;
+
+                uart_write_char((char)high_min);
+                uart_write_char((char)low_min);
+                uart_write_char(':');
+
+
+                uart_write_char((char)high_sec);
+                uart_write_char((char)low_sec);
+                uart_write_char('\n');
+            }
 
         }
         id = 0;
